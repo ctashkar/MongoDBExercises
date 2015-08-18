@@ -8,12 +8,20 @@ using System.Web.Mvc;
 using MongoDB.Driver;
 using M101DotNet.WebApp.Models;
 using M101DotNet.WebApp.Models.Account;
+using M101DotNet.WebApp.Services;
 
 namespace M101DotNet.WebApp.Controllers
 {
     [AllowAnonymous]
     public class AccountController : Controller
     {
+        protected UserService _userService;
+
+        public AccountController()
+        {
+            _userService = new UserService();
+        }
+
         [HttpGet]
         public ActionResult Login(string returnUrl)
         {
@@ -34,8 +42,10 @@ namespace M101DotNet.WebApp.Controllers
             }
 
             var blogContext = new BlogContext();
+            
             // XXX WORK HERE
             // fetch a user by the email in model.Email
+            var user = await _userService.GetUserByEmail(model.Email);
 
             if (user == null)
             {
@@ -85,6 +95,7 @@ namespace M101DotNet.WebApp.Controllers
             var blogContext = new BlogContext();
             // XXX WORK HERE
             // create a new user and insert it into the database
+            await _userService.RegisterNewUser(model);
 
             return RedirectToAction("Index", "Home");
         }
