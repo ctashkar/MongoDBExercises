@@ -12,7 +12,13 @@ namespace M101DotNet.WebApp.Services
 {
     public class PostService : IPostService
     {
+        #region Protected Properties
+
         protected PostRepository _postRepository;
+
+        #endregion
+
+        #region PostService() Constructor
 
         /// <summary>
         /// 
@@ -22,64 +28,87 @@ namespace M101DotNet.WebApp.Services
             _postRepository = new PostRepository();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        public async Task<User> GetUserByEmail(string email)
-        {
-            var user = await _userRepository.GetUserByEmail(email);
+        #endregion
 
-            return user;
-        }
+        #region GetRecentPosts
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="user"></param>
         /// <returns></returns>
-        public async Task<User> RegisterNewUser(RegisterModel model)
+        public async Task<List<Post>> GetRecentPosts()
         {
-            var newUser = new User() { Name = model.Name, Email = model.Email };
+            var listOfRecentPosts = await _postRepository.GetRecentPosts();
 
-            newUser = await _userRepository.AddNewUser(newUser);
-
-            return newUser;
+            return listOfRecentPosts;
         }
 
-        public Task<List<Post>> GetRecentPosts()
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public Task<Post> InsertNewPost(Post post)
+        #region InsertNewPost
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        public async Task<Post> InsertNewPost(Post post)
         {
-            var result = _postRepository.InsertNewPost(post);
+            var result = await _postRepository.InsertNewPost(post);
 
             return result;
         }
+
+        #endregion
+
+        #region FindPost
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<Post> FindPost(ObjectId id)
+        public async Task<Post> FindPost(ObjectId id)
         {
-            var result = _postRepository.FindPost(id);
+            var result = await _postRepository.FindPost(id);
 
             return result;
         }
 
-        public Task<List<Post>> FindPostsByTag(string tag)
+        #endregion
+
+        #region FindPostsByTag
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public async Task<List<Post>> FindPostsByTag(string tag)
         {
-            throw new NotImplementedException();
+            var listOfPosts = await _postRepository.FindPostsByTag(tag);
+
+            return listOfPosts;
         }
 
-        public Task<Post> AddCommentToPost(Comment comment, ObjectId postId)
+        #endregion
+
+        #region AddCommentToPost
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="comment"></param>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        public async Task<Post> AddCommentToPost(Comment comment, ObjectId postId)
         {
-            throw new NotImplementedException();
+            var post = await _postRepository.AddCommentToPost(comment, postId);
+
+            return post;
         }
+
+        #endregion
+
     }
 }

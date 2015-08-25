@@ -15,7 +15,13 @@ namespace M101DotNet.WebApp.Controllers
 {
     public class HomeController : Controller
     {
+        #region Protected properties
+
         protected PostService _postService;
+
+        #endregion
+
+        #region HomeController Constructor
 
         /// <summary>
         /// 
@@ -25,27 +31,55 @@ namespace M101DotNet.WebApp.Controllers
             _postService = new PostService();
         }
 
+        #endregion
+
+        #region Index
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public async Task<ActionResult> Index()
         {
-            var blogContext = new BlogContext();
+            // var blogContext = new BlogContext();  // Not neede here any more
+
             // XXX WORK HERE
             // find the most recent 10 posts and order them
             // from newest to oldest
 
-            var model = new IndexModel
+            var listOfRecentPosts = await _postService.GetRecentPosts();
+
+            var recentPosts = new IndexModel
             {
-                RecentPosts = recentPosts
+                RecentPosts = listOfRecentPosts
             };
 
-            return View(model);
+            return View(recentPosts);
         }
 
+        #endregion
+
+        #region GET NewPost
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult NewPost()
         {
             return View(new NewPostModel());
         }
 
+        #endregion
+
+        #region POST NewPost
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult> NewPost(NewPostModel model)
         {
@@ -54,30 +88,50 @@ namespace M101DotNet.WebApp.Controllers
                 return View(model);
             }
 
-            var blogContext = new BlogContext();
+            // var blogContext = new BlogContext();  // Not neede here any more
+
             // XXX WORK HERE
             // Insert the post into the posts collection
+            var newPost = new Post
+            {
+                Title = model.Title,
+                Content = model.Content,
+                Author = this.User.Identity.Name,
+                CreatedAtUtc = DateTime.UtcNow,
+                Tags = model.Tags.Split(',').ToList(),
+                Comments = new List<Comment>() // Need to initialise a new list of comments here, as it comes empty from the database when we're adding a new post
+            };
 
-            var newPost = new Post();
-            newPost.Title = model.Title;
-            newPost.Content = model.Content;
-            newPost.Tags.Add(model.Tags);
-            newPost.CreatedAtUtc = DateTime.UtcNow;
-            newPost.Author = 
+            /*
+            var tagList = new List<string>();
+            tagList.AddRange(model.Tags.Split(',').ToList());
+            newPost.Tags = tagList;
+            */
 
-            return RedirectToAction("Post", new { id = post.Id });
+            var post = await _postService.InsertNewPost(newPost);
+
+            return RedirectToAction("Post", new {id = post.Id});
         }
 
+        #endregion
+
+        #region GET Post
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult> Post(string id)
         {
-            var blogContext = new BlogContext();
+            // var blogContext = new BlogContext();  // Not neede here any more
 
             // XXX WORK HERE
             // Find the post with the given identifier
 
             var postId = new ObjectId(id);
-            var post = _postService.FindPost(postId).Result;
+            var post = await _postService.FindPost(postId);
 
             if (post == null)
             {
@@ -92,33 +146,66 @@ namespace M101DotNet.WebApp.Controllers
             return View(model);
         }
 
+        #endregion
+
+        #region GET Posts
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult> Posts(string tag = null)
         {
-            var blogContext = new BlogContext();
+            // var blogContext = new BlogContext();  // Not neede here any more
 
             // XXX WORK HERE
             // Find all the posts with the given tag if it exists.
             // Otherwise, return all the posts.
             // Each of these results should be in descending order.
 
-            return System.Web.UI.WebControls.View(posts);
+            var posts = await _postService.FindPostsByTag(tag);
+
+            //return System.Web.UI.WebControls.View(posts);
+            return View(posts);
         }
 
+        #endregion
+
+        #region POST NewComment
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult> NewComment(NewCommentModel model)
         {
             if (!ModelState.IsValid)
             {
-                return RedirectToAction("Post", new { id = model.PostId });
+                return RedirectToAction("Post", new {id = model.PostId});
             }
 
-            var blogContext = new BlogContext();
+            // var blogContext = new BlogContext();  // Not neede here any more
+
             // XXX WORK HERE
             // add a comment to the post identified by model.PostId.
             // you can get the author from "this.User.Identity.Name"
 
-            return RedirectToAction("Post", new { id = model.PostId });
+            var newComment = new Comment()
+            {
+                Author = this.User.Identity.Name,
+                Content = model.Content,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            var result = await _postService.AddCommentToPost(newComment, new ObjectId(model.PostId));
+
+            return RedirectToAction("Post", new {id = model.PostId});
         }
+
+        #endregion
     }
 }

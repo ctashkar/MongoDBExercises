@@ -28,14 +28,11 @@ namespace M101DotNet.WebApp.Models
         public string Content { get; set; }
 
         [Required]
-        [BsonRepresentation(BsonType.Array)]
-        public List<string> Tags { get; set; }
-
-        [Required]
         [BsonRepresentation(BsonType.DateTime)]
         public DateTime CreatedAtUtc { get; set; }
 
-        [BsonRepresentation(BsonType.Array)]
+        public List<string> Tags { get; set; }
+
         public List<Comment> Comments { get; set; }
 
     }
