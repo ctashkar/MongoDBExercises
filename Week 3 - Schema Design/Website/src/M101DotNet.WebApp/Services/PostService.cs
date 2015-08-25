@@ -7,6 +7,7 @@ using M101DotNet.WebApp.Models;
 using M101DotNet.WebApp.Repositories;
 using M101DotNet.WebApp.Models.Account;
 using MongoDB.Bson;
+using System.Web.Mvc;
 
 namespace M101DotNet.WebApp.Services
 {
@@ -14,7 +15,7 @@ namespace M101DotNet.WebApp.Services
     {
         #region Protected Properties
 
-        protected PostRepository _postRepository;
+        private IPostRepository _postRepository;
 
         #endregion
 
@@ -23,9 +24,13 @@ namespace M101DotNet.WebApp.Services
         /// <summary>
         /// 
         /// </summary>
-        public PostService()
+        public PostService(/*IPostRepository postRepository*/)
         {
-            _postRepository = new PostRepository();
+            // _postRepository = new PostRepository();  // OLD line without using StructureMap
+
+            _postRepository = DependencyResolver.Current.GetService<IPostRepository>();  // Creating dependency here directly instead of using the constructor parameter
+            
+            // _postRepository = postRepository;  // This would make use of the constructor parameters and enable Dependency Injection via the constructor
         }
 
         #endregion

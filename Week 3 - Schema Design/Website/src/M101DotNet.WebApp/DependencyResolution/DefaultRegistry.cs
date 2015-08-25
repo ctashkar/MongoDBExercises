@@ -16,9 +16,10 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace M101DotNet.WebApp.DependencyResolution {
+    using Repositories;
     using StructureMap.Configuration.DSL;
     using StructureMap.Graph;
-	
+
     public class DefaultRegistry : Registry {
         #region Constructors and Destructors
 
@@ -29,7 +30,8 @@ namespace M101DotNet.WebApp.DependencyResolution {
                     scan.WithDefaultConventions();
 					scan.With(new ControllerConvention());
                 });
-            //For<IExample>().Use<Example>();
+            
+            For<IPostRepository>().Use<PostRepository>();
         }
 
         #endregion
